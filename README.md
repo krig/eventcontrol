@@ -6,11 +6,18 @@ jQuery timeline control with support for stacking events.
 
 See the included `demo.html` and `demo.js`, or the [live demo][demo].
 
-[demo]: http://www.kri.gs/eventcontrol/ "kri.gs/eventcontrol"
-
-
 ## Dependencies
 
-* moment.js
-* jquery
-* jquery-mousewheel
+* [moment.js][moment]
+* [jquery][jquery]
+* [jquery-mousewheel][jquery-mousewheel]
+
+Right now, there is no support for touch devices. I'm looking at
+eventually using [hammer.js][hammer] for this, but I'd welcome patches
+to make it work.
+
+[demo]: http://www.kri.gs/eventcontrol/ "kri.gs/eventcontrol"
+[moment]: http://momentjs.com/ "moment.js"
+[jquery]: https://jquery.org/ "jquery"
+[jquery-mousewheel]: https://github.com/jquery/jquery-mousewheel "jquery-mousewheel"
+[hammer]: http://hammerjs.github.io/ "hammer.js"
