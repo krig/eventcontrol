@@ -2,23 +2,31 @@ $(function() {
   'use strict';
 
   $('.eventcontrol').EventControl({
-    target: '.eventcontrol-target',
-    onhover: function(item, target) {
-      var x = ['<ul>'];
-      $.each(item, function(k, v) {
-        x.push('<li><strong>', k, ':</strong> ', v, '</li>');
-      });
-      x.push('</ul>');
-      target.html(x.join(''));
+    onhover: function(item, element, event, inout) {
+      if (inout == 'out') {
+        $('.eventcontrol-target').html('');
+        element.css('color', element.data('clr'));
+      } else {
+        var x = ['<ul>'];
+        $.each(item, function(k, v) {
+          x.push('<li><strong>', k, ':</strong> ', v, '</li>');
+        });
+        x.push('</ul>');
+        $('.eventcontrol-target').html(x.join(''));
+        element.data('clr', element.css('color'));
+        element.css('color', '#9b59b6');
+      }
     },
     oncreate: function(item, element) {
       if (item.basename.indexOf('error') > -1) {
-        element.addClass('erroritem');
+        element.css('color', '#e74c3c');
       } else if (item.basename.indexOf('warn') > -1) {
-        element.addClass('warnitem');
+        element.css('color', '#e67e22');
+      } else {
+        element.css('color', '#1abc9c');
       }
     },
-    onclick: function(item, event) {
+    onclick: function(item, element, event) {
       alert(item.timestamp);
     },
     data: [

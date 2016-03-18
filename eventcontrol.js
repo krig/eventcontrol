@@ -29,9 +29,8 @@
   var EventControl = function(element, options) {
 
     this.settings = $.extend({
-      target: '.eventcontrol-target',
-      onhover: function(data, target) {},
-      onclick: function(item, event) {},
+      onhover: function(item, element, event, inout) {},
+      onclick: function(item, element, event) {},
       oncreate: function(item, element) {},
       data: [],
     }, options);
@@ -71,8 +70,9 @@
     var element = this.element;
 
     element.on('click', function(e) {
-      if ($(e.toElement).hasClass('ec-dot')) {
-        self.settings.onclick($(e.toElement).data('event'), e);
+      var tgt = $(e.target);
+      if (tgt.hasClass('ec-dot')) {
+        self.settings.onclick(tgt.data('event'), tgt, e);
       }
     });
 
@@ -83,14 +83,23 @@
         self._drag_x = e.pageX;
         self._drag_min_time = self.min_time.valueOf();
         self._drag_max_time = self.max_time.valueOf();
+        return false;
       }
     });
 
+    function stop_dragging() {
+      element.children('.ec-draggable').removeClass('ec-dragging');
+      self._dragging = null;
+    }
+
     $('body').mouseup(function(e) {
       if (e.which == 1) {
-        element.children('.ec-draggable').removeClass('ec-dragging');
-        self._dragging = null;
+        stop_dragging();
       }
+    });
+
+    $('body').on("dragend",function(){
+      stop_dragging();
     });
 
     $('body').mousemove(function(e) {
@@ -143,13 +152,14 @@
       self.items.append('<div class="ec-dot" style="left:0px;top:0px;"></div>');
       var elem = self.items.children('.ec-dot').last();
       elem.data('event', item);
+      item._starttime = moment(item.timestamp).valueOf();
 
       self.settings.oncreate(item, elem);
 
       elem.hover(function(event) {
-        self.settings.onhover(item, $(self.settings.target));
+        self.settings.onhover(item, elem, event, 'in');
       }, function(event) {
-        $(self.settings.target).html("");
+        self.settings.onhover(item, elem, event, 'out');
       });
 
       var t = moment(item.timestamp);
@@ -350,36 +360,44 @@
 
     self.items.children('.ec-dot').each(function() {
       var item = $(this).data('event');
-      var m = moment(item.timestamp).valueOf();
+      var m = item._starttime;
+
+
       var x = Math.floor(item_offset + ((self.width - (item_offset*2)) / self.timespan) * (m - min_time_ms));
-      var xf = x % item_d;
-      x = x - xf;
-      var y = item_offset;
 
-      var pushed = false;
-      var xoffs = item_slot_x;
-      if ((x + xf - item_slot_x) <= item_w) {
-        pushed = true;
-        x = xoffs;
-        y = item_slot_y + item_d;
-        if (y > self.items_h - item_offset) {
-          xoffs += item_d;
-          x = xoffs;
-          y = item_offset;
-        }
+      if (x < -item_w) {
+        $(this).css('left', -200);
+      } else if (x > self.width + item_w) {
+        $(this).css('left', self.width + 200);
       } else {
-        item_slot_y = item_offset;
+        var xf = x % item_d;
+        x = x - xf;
+        var y = item_offset;
+
+        var pushed = false;
+        var xoffs = item_slot_x;
+        if ((x + xf - item_slot_x) <= item_w) {
+          pushed = true;
+          x = xoffs;
+          y = item_slot_y + item_d;
+          if (y > self.items_h - item_offset) {
+            xoffs += item_d;
+            x = xoffs;
+            y = item_offset;
+          }
+        } else {
+          item_slot_y = item_offset;
+        }
+
+        if (!pushed) {
+          x += xf;
+        }
+
+        item_slot_x = x;
+        item_slot_y = y;
+
+        $(this).css('left', x).css('top', y);
       }
-
-      if (!pushed) {
-        x += xf;
-      }
-
-      item_slot_x = x;
-      item_slot_y = y;
-
-      var bo = element.offset();
-      $(this).offset({left: bo.left + x, top: bo.top + y});
     });
   };
 
