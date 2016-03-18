@@ -105,6 +105,21 @@
       stop_dragging();
     });
 
+    $(window).resize(function() {
+      if (!self._dirty) {
+        self._dirty = true;
+        if (self.min_time && self.max_time) {
+          var mit = self.min_time.clone();
+          var mat = self.max_time.clone();
+          window.setTimeout(function() {
+            if (mit.isSame(self.min_time) && mat.isSame(self.max_time)) {
+              self.update_timespan(mit, mat);
+            }
+          }, 400);
+        }
+      }
+    });
+
     $('body').mousemove(function(e) {
       if (e.which == 1 && self._dragging) {
         var deltapx = -(e.pageX - self._drag_x);
@@ -193,8 +208,18 @@
     var self = this;
     var element = this.element;
 
+    self._dirty = false;
+    self.width = element.width();
+
     self.ticks.empty();
     self.labels.empty();
+
+    if (!moment.isMoment(new_min_time)) {
+      new_min_time = moment(new_min_time);
+    }
+    if (!moment.isMoment(new_max_time)) {
+      new_max_time = moment(new_max_time);
+    }
 
     self.timespan = new_max_time.valueOf() - new_min_time.valueOf();
     if (self.timespan < MIN_SPAN) {
