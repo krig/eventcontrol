@@ -1,3 +1,6 @@
+// Copyright (c) 2016 Kristoffer Gronlund <kgronlund@suse.com>
+// See COPYING for license.
+
 (function($) {
   'use strict';
 
@@ -72,7 +75,7 @@
     element.on('click', function(e) {
       var tgt = $(e.target);
       if (tgt.hasClass('ec-dot')) {
-        self.settings.onclick(tgt.data('event'), tgt, e);
+        self.settings.onclick.call(self, tgt.data('event'), tgt, e);
       }
     });
 
@@ -154,12 +157,12 @@
       elem.data('event', item);
       item._starttime = moment(item.timestamp).valueOf();
 
-      self.settings.oncreate(item, elem);
+      self.settings.oncreate.call(self, item, elem);
 
       elem.hover(function(event) {
-        self.settings.onhover(item, elem, event, 'in');
+        self.settings.onhover.call(self, item, elem, event, 'in');
       }, function(event) {
-        self.settings.onhover(item, elem, event, 'out');
+        self.settings.onhover.call(self, item, elem, event, 'out');
       });
 
       var t = moment(item.timestamp);
@@ -176,6 +179,14 @@
     self.center_time = self.min_time.valueOf() + (self.max_time.valueOf() - self.min_time.valueOf()) * 0.5;
 
     self.update_timespan(self.min_time.clone(), self.max_time.clone());
+  };
+
+  EventControl.prototype.save_state = function() {
+    return {min_time: this.min_time.valueOf(), max_time: this.max_time.valueOf()};
+  };
+
+  EventControl.prototype.load_state = function(state) {
+    this.update_timespan(state.min_time, state.max_time);
   };
 
   EventControl.prototype.update_timespan = function(new_min_time, new_max_time) {
@@ -403,12 +414,14 @@
 
   $.fn.EventControl = function(options) {
     return this.each(function() {
-      var self = $(this);
-      var data = self.data('eventcontrol');
-      if (!data) {
-        self.data('eventcontrol', new EventControl(self, options));
+      var element = $(this);
+      var self = element.data('eventcontrol');
+      if (!self) {
+        element.data('eventcontrol', new EventControl(element, options));
+      } else if (options === undefined) {
+        return self.save_state();
       } else {
-        data.update(options);
+        self.load_state(options);
       }
     });
   };
