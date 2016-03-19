@@ -234,20 +234,20 @@
       focus = 0.5;
     }
 
-    var new_min_time = self.min_time.clone();
-    var new_max_time = self.max_time.clone();
+    var new_min_time = this.min_time.clone();
+    var new_max_time = this.max_time.clone();
 
     if (dir < 0) {
-      var delta = self.timespan * 0.5;
+      var delta = this.timespan * 0.5;
       new_min_time.subtract(delta * focus, 'milliseconds');
       new_max_time.add(delta * (1.0 - focus), 'milliseconds');
     } else {
-      var delta = self.timespan * 0.25;
+      var delta = this.timespan * 0.25;
       new_min_time.add(delta * focus, 'milliseconds');
       new_max_time.subtract(delta * (1.0 - focus), 'milliseconds');
     }
 
-    return self.update_timespan(new_min_time, new_max_time);
+    return this.update_timespan(new_min_time, new_max_time);
   };
 
   EventControl.prototype.update_timespan = function(new_min_time, new_max_time) {

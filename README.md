@@ -12,9 +12,9 @@ See the included `index.html` and `demo.js`, or the [live demo][demo].
 * [jquery][jquery]
 * [jquery-mousewheel][jquery-mousewheel]
 
-Optionally, we can use [hammer.js][hammer] to enable use on touch
-devices. Right now, the controls are somewhat awkward: you probably
-want to add zoom in/zoom out buttons separately.
+Optional dependency:
+
+* [hammer.js][hammer]
 
 [demo]: http://www.kri.gs/eventcontrol/ "kri.gs/eventcontrol"
 [moment]: http://momentjs.com/ "moment.js"
