@@ -251,12 +251,10 @@
   EventControl.prototype.update_timespan = function(new_min_time, new_max_time) {
     var self = this;
     var element = this.element;
+    var i = 0;
 
     self._dirty = false;
     self.width = element.width();
-
-    self.ticks.empty();
-    self.labels.empty();
 
     if (!moment.isMoment(new_min_time)) {
       new_min_time = moment(new_min_time);
@@ -286,7 +284,6 @@
     self.max_time = new_max_time;
 
     var min_time_ms = self.min_time.valueOf();
-
     var major;
     var minor;
     var major_fmt = 'YYYY-MM-DD';
@@ -333,6 +330,12 @@
 
     major = unit_in_timespan(maj_unit, min_time_ms, self.timespan);
 
+    var lastlblend = -1;
+    var existing_ticks = self.ticks.children('.ec-tick');
+    var existing_labels = self.labels.children('.ec-label,.ec-region-label');
+    var tick_idx = 0;
+    var label_idx = 0;
+
     if (min_unit != null) {
       if (min_unit < 60*1000) {
         minor_fmt = 'HH:mm:ss';
@@ -340,28 +343,49 @@
 
       minor = unit_in_timespan(min_unit, min_time_ms, self.timespan);
 
-      var lastlblend = -1;
-      $.each(minor, function(i, ts) {
+      for (i = 0; i < minor.length; i++) {
+        var ts = minor[i];
         var xoffs = (self.width / self.timespan) * (ts - min_time_ms);
-        self.ticks.append(['<div class="ec-tick" style="left:', xoffs, 'px;top:', 1, 'px;height:', self.items_h + 1 + self.markers_h, 'px;"></div>'].join(''));
+        if (tick_idx < existing_ticks.length) {
+          var tick = $(existing_ticks[tick_idx]);
+          tick.css('left', xoffs).css('top', 1).css('height', self.items_h + 1 + self.markers_h);
+          tick_idx += 1;
+        } else {
+          self.ticks.append(['<div class="ec-tick" style="left:', xoffs, 'px;top:', 1, 'px;height:', self.items_h + 1 + self.markers_h, 'px;"></div>'].join(''));
+        }
 
         var l = (self.width / self.timespan) * (ts - min_time_ms);
         var t = self.items_h + 1;
         var lbl = moment(ts).format(minor_fmt);
         if (l > lastlblend) {
-          self.labels.append(['<div class="ec-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+          if (label_idx < existing_labels.length) {
+            var label = $(existing_labels[label_idx]);
+            label.css('left', l).css('top', t).text(lbl).removeClass('ec-region-label').addClass('ec-label');
+            label_idx += 1;
+          } else {
+            self.labels.append(['<div class="ec-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+          }
           lastlblend = l + self.labels.children().last().width();
         }
-      });
+      }
     } else {
-      $.each(major, function(i, ts) {
+      for (i = 0; i < major.length; i++) {
+        var ts = major[i];
         var xoffs = (self.width / self.timespan) * (ts - min_time_ms);
-        self.ticks.append(['<div class="ec-tick" style="left:', xoffs, 'px;top:', 1, 'px;height:', self.items_h * 0.5, 'px;"></div>'].join(''));
-      });
+
+        if (tick_idx < existing_ticks.length) {
+          var tick = $(existing_ticks[tick_idx]);
+          tick.css('left', xoffs).css('top', 1).css('height', self.items_h * 0.5);
+          tick_idx += 1;
+        } else {
+          self.ticks.append(['<div class="ec-tick" style="left:', xoffs, 'px;top:', 1, 'px;height:', self.items_h * 0.5, 'px;"></div>'].join(''));
+        }
+      }
     }
 
-    var lastlblend = -1;
-    $.each(major, function(i, ts) {
+    lastlblend = -1;
+    for (i = 0; i < major.length; i++) {
+      var ts = major[i];
       var l = ((self.width - 4) / self.timespan) * (ts - min_time_ms) + 2;
       var t = self.items_h + self.markers_h - 14;
       var lbl = moment(ts).format(major_fmt);
@@ -377,10 +401,24 @@
       }
 
       if (l > lastlblend) {
-        self.labels.append(['<div class="ec-region-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+        if (label_idx < existing_labels.length) {
+          var label = $(existing_labels[label_idx]);
+          label.css('left', l).css('top', t).text(lbl).addClass('ec-region-label').removeClass('ec-label');
+          label_idx += 1;
+        } else {
+          self.labels.append(['<div class="ec-region-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+        }
+
         lastlblend = l + self.labels.children().last().width();
       }
-    });
+    }
+
+    for (i = tick_idx; i < existing_ticks.length; i++) {
+      $(existing_ticks[i]).remove();
+    }
+    for (i = label_idx; i < existing_labels.length; i++) {
+      $(existing_labels[i]).remove();
+    }
 
     var item_offset = 2;
     var item_slot_x = -100;
@@ -388,17 +426,19 @@
     var item_w = 8;
     var item_d = item_w + item_offset;
 
-    self.items.children('.ec-dot').each(function() {
-      var item = $(this).data('event');
+    var items = self.items.children('.ec-dot');
+    for (i = 0; i < items.length; i++) {
+      var elem = $(items[i]);
+      var item = elem.data('event');
       var m = item._starttime;
 
 
       var x = Math.floor(item_offset + ((self.width - (item_offset*2)) / self.timespan) * (m - min_time_ms));
 
       if (x < -item_w) {
-        $(this).css('left', -200);
+        elem.css('left', -200);
       } else if (x > self.width + item_w) {
-        $(this).css('left', self.width + 200);
+        elem.css('left', self.width + 200);
       } else {
         var xf = x % item_d;
         x = x - xf;
@@ -426,9 +466,9 @@
         item_slot_x = x;
         item_slot_y = y;
 
-        $(this).css('left', x).css('top', y);
+        elem.css('left', x).css('top', y);
       }
-    });
+    }
   };
 
   $.fn.EventControl = function(options) {
