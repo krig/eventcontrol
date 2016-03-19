@@ -2,6 +2,7 @@ $(function() {
   'use strict';
 
   $('.eventcontrol').EventControl({
+    hammertime: true,
     onhover: function(item, element, event, inout) {
       if (inout == 'out') {
         $('.eventcontrol-target').html('');

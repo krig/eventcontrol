@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 
   <title>EventControl demo</title>
   <meta name="description" content="EventControl Demo">
@@ -139,11 +139,26 @@ $(function() {
     onclick: function(item, element, event) {
       // Called when an item is left-clicked.
     },
-    data: [],
-    // An array of objects with a timestamp key.
+    data: [],  // An array of objects with a timestamp key.
+    hammertime: true, // Enable use of hammer.js to support touch devices
   });
 });
         </pre>
+        <p>Once created, the EventControl object can be accessed as demonstrated
+          below. Right now, there is no support for updating the dataset, I plan
+          to add this later.
+        </p>
+        <pre>
+var state = $('.eventcontrol').EventControl(); // save state
+$('.eventcontrol').EventControl(state); // restore state
+$('.eventcontrol').EventControl('zoom-in', focus);
+$('.eventcontrol').EventControl('zoom-out', focus);
+        </pre>
+        <p>The library can optionally use <tt>hammer.js</tt> to support basic
+          touch controls. Supporting pinch to zoom interferes with all kinds of
+          functionality, so you'll probably want to hook up zoom in/out to
+          separate controls.
+        </p>
       </div>
     </div>
 
@@ -180,6 +195,9 @@ $(function() {
 
   <!-- jquery.mousewheel.js -->
   <script src="jquery.mousewheel.min.js"></script>
+
+  <!-- hammer.js -->
+  <script src="hammer.min.js"></script>
 
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="eventcontrol.js"></script>
