@@ -2,7 +2,6 @@
 // See COPYING for license.
 
 (function($) {
-  'use strict';
 
   function unit_in_timespan(h, min_time, timespan) {
     var s = min_time - (min_time % h);
