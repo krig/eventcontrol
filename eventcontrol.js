@@ -4,10 +4,6 @@
 (function($) {
   'use strict';
 
-  function fa(name) {
-    return '<i class="fa fa-' + name + '"></i>';
-  }
-
   function unit_in_timespan(h, min_time, timespan) {
     var s = min_time - (min_time % h);
     var e = min_time + timespan;
