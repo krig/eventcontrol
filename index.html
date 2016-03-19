@@ -139,10 +139,20 @@ $(function() {
     onclick: function(item, element, event) {
       // Called when an item is left-clicked.
     },
-    data: [],
-    // An array of objects with a timestamp key.
+    data: [],  // An array of objects with a timestamp key.
+    hammertime: true, // Enable use of hammer.js to support touch devices
   });
 });
+        </pre>
+        <p>Once created, the EventControl object can be accessed as demonstrated
+          below. Right now, there is no support for updating the dataset, I plan
+          to add this later.
+        </p>
+        <pre>
+var state = $('.eventcontrol').EventControl(); // save state
+$('.eventcontrol').EventControl(state); // restore state
+$('.eventcontrol').EventControl('zoom-in', focus);
+$('.eventcontrol').EventControl('zoom-out', focus);
         </pre>
       </div>
     </div>

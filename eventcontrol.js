@@ -47,6 +47,7 @@
     this._dragging = null;
     this._drag_x = 0;
 
+    element.addClass('eventcontrol');
     element.append(['<div class="ec-items ec-draggable" style="top:0px;height:', this.items_h, 'px;"></div>',
                     '<div class="ec-markers ec-draggable" style="top:', (this.items_h + 1), 'px;height:', this.markers_h, 'px;">',
                     '<div class="ec-ticks"></div>',
@@ -114,30 +115,10 @@
 
           pan_with_delta(dragdelta, self._pan_min_time, self._pan_max_time);
         } else if (e.type == "doubletap") {
-          console.log("dt", e.center);
-          console.log(e.target);
-
           var base = element.offset();
-
           var dir = 1;
-
           var offset = (e.center.x - base.left) / self.width;
-
-          var new_min_time = self.min_time.clone();
-          var new_max_time = self.max_time.clone();
-
-          if (dir < 0) {
-            var delta = self.timespan * 0.5;
-            new_min_time.subtract(delta * offset, 'milliseconds');
-            new_max_time.add(delta * (1.0 - offset), 'milliseconds');
-          } else {
-            var delta = self.timespan * 0.25;
-            new_min_time.add(delta * offset, 'milliseconds');
-            new_max_time.subtract(delta * (1.0 - offset), 'milliseconds');
-          }
-
-          self.update_timespan(new_min_time, new_max_time);
-
+          self.zoom(dir, offset);
         } else {
           console.log("Unexpected hammer event", e.type);
         }
@@ -205,26 +186,9 @@
     element.on('mousewheel', function(event) {
       event.preventDefault();
       var dir = event.deltaY;
-      // factor = event.deltaFactor;
-
       var base = element.offset();
-
       var offset = (event.pageX - base.left) / self.width;
-
-      var new_min_time = self.min_time.clone();
-      var new_max_time = self.max_time.clone();
-
-      if (dir < 0) {
-        var delta = self.timespan * 0.5;
-        new_min_time.subtract(delta * offset, 'milliseconds');
-        new_max_time.add(delta * (1.0 - offset), 'milliseconds');
-      } else {
-        var delta = self.timespan * 0.25;
-        new_min_time.add(delta * offset, 'milliseconds');
-        new_max_time.subtract(delta * (1.0 - offset), 'milliseconds');
-      }
-
-      self.update_timespan(new_min_time, new_max_time);
+      self.zoom(dir, offset);
     });
 
     $.each(self.settings.data, function(i, item) {
@@ -263,6 +227,27 @@
 
   EventControl.prototype.load_state = function(state) {
     this.update_timespan(state.min_time, state.max_time);
+  };
+
+  EventControl.prototype.zoom = function(dir, focus) {
+    if (focus === undefined) {
+      focus = 0.5;
+    }
+
+    var new_min_time = self.min_time.clone();
+    var new_max_time = self.max_time.clone();
+
+    if (dir < 0) {
+      var delta = self.timespan * 0.5;
+      new_min_time.subtract(delta * focus, 'milliseconds');
+      new_max_time.add(delta * (1.0 - focus), 'milliseconds');
+    } else {
+      var delta = self.timespan * 0.25;
+      new_min_time.add(delta * focus, 'milliseconds');
+      new_max_time.subtract(delta * (1.0 - focus), 'milliseconds');
+    }
+
+    return self.update_timespan(new_min_time, new_max_time);
   };
 
   EventControl.prototype.update_timespan = function(new_min_time, new_max_time) {
@@ -506,6 +491,10 @@
         element.data('eventcontrol', new EventControl(element, options));
       } else if (options === undefined) {
         return self.save_state();
+      } else if (options == 'zoom-in') {
+        return self.zoom.apply(self, [1] + arguments.slice(1, 2));
+      } else if (options == 'zoom-out') {
+        return self.zoom.apply(self, [-1] + arguments.slice(1, 2));
       } else {
         self.load_state(options);
       }
