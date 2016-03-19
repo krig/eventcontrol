@@ -20,8 +20,8 @@
     if (r.length == 0) {
       r.push(min_time);
     }
-    if (r.length > 12) {
-      r = r.slice(0, 12);
+    if (r.length > 20) {
+      r = r.slice(0, 20);
     }
     return r;
   }
@@ -294,9 +294,13 @@
     var major_fmt = 'YYYY-MM-DD';
     var minor_fmt = 'HH:mm';
     var maj_unit = 24*3600*1000;
-    var min_unit = 24*3600*1000;
+    var min_unit = null;
 
-    if (self.timespan > 365*24*3600*1000) {
+    if (self.timespan > 4*365*24*3600*1000) {
+      maj_unit = 365*24*3600*1000;
+      major_fmt = 'YYYY';
+      min_unit = null;
+    } else if (self.timespan > 365*24*3600*1000) {
       maj_unit = 120*24*3600*1000;
       major_fmt = 'YYYY-MM';
       min_unit = null;
@@ -313,82 +317,20 @@
     } else if (self.timespan > 12*24*3600*1000) {
       maj_unit = 7*24*3600*1000;
       min_unit = null;
-    }
+    } else if (self.timespan >= 6*24*3600*1000) {
+      maj_unit = 24*3600*1000;
+      min_unit = null;
+    } else {
+      var spans = [3*24*3600*1000, 2*24*3600*1000, 24*3600*1000, 12*3600*1000, 6*3600*1000, 3*3600*1000, 3600*1000, 45*60*1000, 30*60*1000, 20*60*1000, 10*60*1000, 5*60*1000, 2*60*1000, 60*1000, 45*1000, 20*1000, 12*1000, 0];
+      var units = [12*3600*1000, 6*3600*1000, 4*3600*1000, 3*3600*1000, 3600*1000, 30*60*1000, 15*60*1000, 5*60*1000, 4*60*1000, 3*60*1000, 2*60*1000, 60*1000, 30*6000, 15*1000, 10*1000, 5*1000, 2*1000, 1000,];
 
-    if (self.timespan < 6*24*3600*1000) {
-      min_unit = 12*3600*1000;
-    }
-
-    if (self.timespan < 3*24*3600*1000) {
-      min_unit = 6*3600*1000;
-    }
-
-    if (self.timespan < 3*24*3600*1000) {
-      min_unit = 6*3600*1000;
-    }
-
-    if (self.timespan < 2*24*3600*1000) {
-      min_unit = 3*3600*1000;
-    }
-
-    if (self.timespan < 24*3600*1000) {
-      min_unit = 3*3600*1000;
-    }
-
-    if (self.timespan < 12*3600*1000) {
-      min_unit = 3600*1000;
-    }
-
-    if (self.timespan < 6*3600*1000) {
-      min_unit = 30*60*1000;
-    }
-
-    if (self.timespan < 3*3600*1000) {
-      min_unit = 15*60*1000;
-    }
-
-    if (self.timespan < 3600*1000) {
-      min_unit = 5*60*1000;
-    }
-
-    if (self.timespan < 45*60*1000) {
-      min_unit = 4*60*1000;
-    }
-
-    if (self.timespan < 30*60*1000) {
-      min_unit = 3*60*1000;
-    }
-
-    if (self.timespan < 20*60*1000) {
-      min_unit = 2*60*1000;
-    }
-
-    if (self.timespan < 10*60*1000) {
-      min_unit = 60*1000;
-    }
-
-    if (self.timespan < 5*60*1000) {
-      min_unit = 30*1000;
-    }
-
-    if (self.timespan < 2*60*1000) {
-      min_unit = 15*1000;
-    }
-
-    if (self.timespan < 60*1000) {
-      min_unit = 10*1000;
-    }
-
-    if (self.timespan < 45*1000) {
-      min_unit = 5*1000;
-    }
-
-    if (self.timespan < 20*1000) {
-      min_unit = 2*1000;
-    }
-
-    if (self.timespan < 12*1000) {
-      min_unit = 1*1000;
+      var i;
+      for (i = 0; i < spans.length; i++) {
+        if (self.timespan > spans[i]) {
+          min_unit = units[i];
+          break;
+        }
+      }
     }
 
     major = unit_in_timespan(maj_unit, min_time_ms, self.timespan);
