@@ -38,13 +38,15 @@
       oncreate: function(item, element) {},
       data: [],
       hammertime: false,
+      items_height: 101,
+      markers_height: 31,
     }, options);
 
     this.element = element;
     this.width = element.width();
 
-    this.items_h = (6*8) + 4;
-    this.markers_h = 31;
+    this.items_h = this.settings.items_height;
+    this.markers_h = this.settings.markers_height;
     this._dragging = null;
     this._drag_x = 0;
 
