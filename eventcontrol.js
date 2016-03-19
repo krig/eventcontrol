@@ -4,10 +4,6 @@
 (function($) {
   'use strict';
 
-  function fa(name) {
-    return '<i class="fa fa-' + name + '"></i>';
-  }
-
   function unit_in_timespan(h, min_time, timespan) {
     var s = min_time - (min_time % h);
     var e = min_time + timespan;
@@ -345,6 +341,7 @@
 
       minor = unit_in_timespan(min_unit, min_time_ms, self.timespan);
 
+      var lastlblend = -1;
       $.each(minor, function(i, ts) {
         var xoffs = (self.width / self.timespan) * (ts - min_time_ms);
         self.ticks.append(['<div class="ec-tick" style="left:', xoffs, 'px;top:', 1, 'px;height:', self.items_h + 1 + self.markers_h, 'px;"></div>'].join(''));
@@ -352,7 +349,10 @@
         var l = (self.width / self.timespan) * (ts - min_time_ms);
         var t = self.items_h + 1;
         var lbl = moment(ts).format(minor_fmt);
-        self.labels.append(['<div class="ec-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+        if (l > lastlblend) {
+          self.labels.append(['<div class="ec-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+          lastlblend = l + self.labels.children().last().width();
+        }
       });
     } else {
       $.each(major, function(i, ts) {
@@ -361,6 +361,7 @@
       });
     }
 
+    var lastlblend = -1;
     $.each(major, function(i, ts) {
       var l = ((self.width - 4) / self.timespan) * (ts - min_time_ms) + 2;
       var t = self.items_h + self.markers_h - 14;
@@ -376,7 +377,10 @@
         }
       }
 
-      self.labels.append(['<div class="ec-region-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+      if (l > lastlblend) {
+        self.labels.append(['<div class="ec-region-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+        lastlblend = l + self.labels.children().last().width();
+      }
     });
 
     var item_offset = 2;
