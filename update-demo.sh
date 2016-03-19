@@ -1,5 +1,5 @@
 #!/bin/sh
-curl --data @eventcontrol.js --output eventcontrol.min.js.$$ 'https://marijnhaverbeke.nl/uglifyjs?utf8=1'
+curl -X POST -s --data-urlencode "js_code=$(cat eventcontrol.js)" --output eventcontrol.min.js.$$ 'http://marijnhaverbeke.nl/uglifyjs?utf8=1&download=eventcontrol.min.js'
 mv eventcontrol.min.js.$$ eventcontrol.min.js
 git add eventcontrol.min.js
 git commit -m "Updated eventcontrol.min.js"
