@@ -4,7 +4,7 @@ jQuery timeline control with support for stacking events.
 
 ## Example
 
-See the included `demo.html` and `demo.js`, or the [live demo][demo].
+See the included `index.html` and `demo.js`, or the [live demo][demo].
 
 ## Dependencies
 

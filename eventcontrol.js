@@ -36,6 +36,7 @@
       onclick: function(item, element, event) {},
       oncreate: function(item, element) {},
       data: [],
+      hammertime: false,
     }, options);
 
     this.element = element;
@@ -72,38 +73,119 @@
     var self = this;
     var element = this.element;
 
-    element.on('click', function(e) {
-      var tgt = $(e.target);
-      if (tgt.hasClass('ec-dot')) {
-        self.settings.onclick.call(self, tgt.data('event'), tgt, e);
-      }
-    });
+    function pan_with_delta(dragdelta, min_time, max_time) {
+      if (dragdelta > 0.9)
+        dragdelta = 0.9;
+      else if (dragdelta < -0.9)
+        dragdelta = -0.9;
 
-    element.mousedown(function(e) {
-      if (e.which == 1) {
-        element.children('.ec-draggable').addClass('ec-dragging');
-        self._dragging = true;
-        self._drag_x = e.pageX;
-        self._drag_min_time = self.min_time.valueOf();
-        self._drag_max_time = self.max_time.valueOf();
-        return false;
-      }
-    });
+      var time_offset = dragdelta * self.timespan;
 
-    function stop_dragging() {
-      element.children('.ec-draggable').removeClass('ec-dragging');
-      self._dragging = null;
+      var new_min_time = moment(min_time + time_offset);
+      var new_max_time = moment(max_time + time_offset);
+      if (!new_min_time.isSame(self.min_time) || new_max_time.isSame(self.max_time)) {
+        self.update_timespan(new_min_time, new_max_time);
+      }
     }
 
-    $('body').mouseup(function(e) {
-      if (e.which == 1) {
-        stop_dragging();
-      }
-    });
+    if (self.settings.hammertime) {
+      self.mc = new Hammer.Manager(self.element.get()[0]);
+      self.mc.add(new Hammer.Pan());
+      // Tap recognizer with minimal 2 taps
+      self.mc.add( new Hammer.Tap({ event: 'doubletap', taps: 2 }) );
+      // Single tap recognizer
+      self.mc.add( new Hammer.Tap({ event: 'singletap' }) );
+      self.mc.get('doubletap').recognizeWith('singletap');
+      // we only want to trigger a tap, when we don't have detected a doubletap
+      self.mc.get('singletap').requireFailure('doubletap');
 
-    $('body').on("dragend",function(){
-      stop_dragging();
-    });
+      self.mc.on("panstart panleft panright singletap doubletap tap", function(e) {
+        if (e.type == "singletap") {
+          var tgt = $(e.target);
+          if (tgt.hasClass('ec-dot')) {
+            self.settings.onclick.call(self, tgt.data('event'), tgt, e);
+          }
+        } else if (e.type == "panstart") {
+          self._pan_min_time = self.min_time.valueOf();
+          self._pan_max_time = self.max_time.valueOf();
+        } else if (e.type == "panleft" || e.type == "panright") {
+          var deltapx = -e.deltaX;
+          var dragdelta = deltapx / self.width;
+
+          pan_with_delta(dragdelta, self._pan_min_time, self._pan_max_time);
+        } else if (e.type == "doubletap") {
+          console.log("dt", e.center);
+          console.log(e.target);
+
+          var base = element.offset();
+
+          var dir = 1;
+
+          var offset = (e.center.x - base.left) / self.width;
+
+          var new_min_time = self.min_time.clone();
+          var new_max_time = self.max_time.clone();
+
+          if (dir < 0) {
+            var delta = self.timespan * 0.5;
+            new_min_time.subtract(delta * offset, 'milliseconds');
+            new_max_time.add(delta * (1.0 - offset), 'milliseconds');
+          } else {
+            var delta = self.timespan * 0.25;
+            new_min_time.add(delta * offset, 'milliseconds');
+            new_max_time.subtract(delta * (1.0 - offset), 'milliseconds');
+          }
+
+          self.update_timespan(new_min_time, new_max_time);
+
+        } else {
+          console.log("Unexpected hammer event", e.type);
+        }
+      });
+
+    } else {
+      element.on('click', function(e) {
+        var tgt = $(e.target);
+        if (tgt.hasClass('ec-dot')) {
+          self.settings.onclick.call(self, tgt.data('event'), tgt, e);
+        }
+      });
+
+      element.mousedown(function(e) {
+        if (e.which == 1) {
+          element.children('.ec-draggable').addClass('ec-dragging');
+          self._dragging = true;
+          self._drag_x = e.pageX;
+          self._drag_min_time = self.min_time.valueOf();
+          self._drag_max_time = self.max_time.valueOf();
+          return false;
+        }
+      });
+
+      function stop_dragging() {
+        element.children('.ec-draggable').removeClass('ec-dragging');
+        self._dragging = null;
+      }
+
+      $('body').mouseup(function(e) {
+        if (e.which == 1) {
+          stop_dragging();
+        }
+      });
+
+      $('body').on("dragend",function(){
+        stop_dragging();
+      });
+
+      $('body').mousemove(function(e) {
+        if (e.which == 1 && self._dragging) {
+          var deltapx = -(e.pageX - self._drag_x);
+          var dragdelta = deltapx / self.width;
+
+          pan_with_delta(dragdelta, self._drag_min_time, self.drag_max_time);
+        }
+      });
+    }
 
     $(window).resize(function() {
       if (!self._dirty) {
@@ -116,27 +198,6 @@
               self.update_timespan(mit, mat);
             }
           }, 400);
-        }
-      }
-    });
-
-    $('body').mousemove(function(e) {
-      if (e.which == 1 && self._dragging) {
-        var deltapx = -(e.pageX - self._drag_x);
-        deltapx = deltapx - (deltapx % 4);
-        var dragdelta = deltapx / self.width;
-
-        if (dragdelta > 0.9)
-          dragdelta = 0.9;
-        else if (dragdelta < -0.9)
-          dragdelta = -0.9;
-
-        var time_offset = dragdelta * self.timespan;
-
-        var new_min_time = moment(self._drag_min_time + time_offset);
-        var new_max_time = moment(self._drag_max_time + time_offset);
-        if (!new_min_time.isSame(self.min_time) || new_max_time.isSame(self.max_time)) {
-          self.update_timespan(new_min_time, new_max_time);
         }
       }
     });
