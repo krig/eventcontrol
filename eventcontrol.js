@@ -23,6 +23,10 @@
 
   var MIN_SPAN = 10000;
   var MAX_SPAN = 1000 * 3600 * 24 * 365 * 100;
+  var MAJSPANS = [4*365*24*3600*1000, 365*24*3600*1000, 120*24*3600*1000, 42*24*3600*1000, 28*24*3600*1000, 21*24*3600*1000, 14*24*3600*1000, 10*24*3600*1000];
+  var MAJUNITS = [365*24*3600*1000, 120*24*3600*1000, 31*24*3600*1000, 21*24*3600*1000, 14*24*3600*1000, 7*24*3600*1000, 4*24*3600*1000, 2*24*3600*1000];
+  var MINSPANS = [3*24*3600*1000, 2*24*3600*1000, 24*3600*1000, 12*3600*1000, 6*3600*1000, 3*3600*1000,  3600*1000, 45*60*1000, 30*60*1000, 20*60*1000, 10*60*1000, 5*60*1000, 3*60*1000, 60*1000, 45*1000, 20*1000, 12*1000, 0];
+  var MINUNITS = [  12*3600*1000,    6*3600*1000,  4*3600*1000,  3*3600*1000,   3600*1000,  30*60*1000, 15*60*1000,  5*60*1000,  4*60*1000,  3*60*1000,  2*60*1000,   60*1000,   30*1000, 15*1000, 10*1000,  5*1000,  2*1000, 1000,];
 
   var EventControl = function(element, options) {
     this.settings = $.extend({
@@ -203,8 +207,8 @@
       }
     });
 
-    self.min_time.subtract(5, 'seconds');
-    self.max_time.add(5, 'seconds');
+    self.min_time.subtract(5, 's');
+    self.max_time.add(5, 's');
     self.center_time = self.min_time.valueOf() + (self.max_time.valueOf() - self.min_time.valueOf()) * 0.5;
 
     self.update_timespan(self.min_time.clone(), self.max_time.clone());
@@ -228,12 +232,12 @@
 
     if (dir < 0) {
       var delta = this.timespan * 0.5;
-      new_min_time.subtract(delta * focus, 'milliseconds');
-      new_max_time.add(delta * (1.0 - focus), 'milliseconds');
+      new_min_time.subtract(delta * focus, 'ms');
+      new_max_time.add(delta * (1.0 - focus), 'ms');
     } else {
       var delta = this.timespan * 0.25;
-      new_min_time.add(delta * focus, 'milliseconds');
-      new_max_time.subtract(delta * (1.0 - focus), 'milliseconds');
+      new_min_time.add(delta * focus, 'ms');
+      new_max_time.subtract(delta * (1.0 - focus), 'ms');
     }
 
     return this.update_timespan(new_min_time, new_max_time);
@@ -284,27 +288,22 @@
 
 
     if (self.timespan >= 6*24*3600*1000) {
-      var majspans = [4*365*24*3600*1000, 365*24*3600*1000, 120*24*3600*1000, 42*24*3600*1000, 28*24*3600*1000, 21*24*3600*1000, 14*24*3600*1000, 10*24*3600*1000];
-      var majunits = [365*24*3600*1000, 120*24*3600*1000, 31*24*3600*1000, 21*24*3600*1000, 14*24*3600*1000, 7*24*3600*1000, 4*24*3600*1000, 2*24*3600*1000];
       min_unit = null;
       if (self.timespan > 4*365*24*3600*1000) {
         major_fmt = 'YYYY';
       } else if (self.timespan > 120*24*3600*1000) {
         major_fmt = 'YYYY-MM';
       }
-      for (i = 0; i < majspans.length; i++) {
-        if (self.timespan > majspans[i]) {
-          maj_unit = majunits[i];
+      for (i = 0; i < MAJSPANS.length; i++) {
+        if (self.timespan > MAJSPANS[i]) {
+          maj_unit = MAJUNITS[i];
           break;
         }
       }
     } else {
-      var spans = [3*24*3600*1000, 2*24*3600*1000, 24*3600*1000, 12*3600*1000, 6*3600*1000, 3*3600*1000,  3600*1000, 45*60*1000, 30*60*1000, 20*60*1000, 10*60*1000, 5*60*1000, 3*60*1000, 60*1000, 45*1000, 20*1000, 12*1000, 0];
-      var units = [  12*3600*1000,    6*3600*1000,  4*3600*1000,  3*3600*1000,   3600*1000,  30*60*1000, 15*60*1000,  5*60*1000,  4*60*1000,  3*60*1000,  2*60*1000,   60*1000,   30*1000, 15*1000, 10*1000,  5*1000,  2*1000, 1000,];
-
-      for (i = 0; i < spans.length; i++) {
-        if (self.timespan > spans[i]) {
-          min_unit = units[i];
+      for (i = 0; i < MINSPANS.length; i++) {
+        if (self.timespan > MINSPANS[i]) {
+          min_unit = MINUNITS[i];
           break;
         }
       }
@@ -393,12 +392,14 @@
     var item_d = item_w + item_offset;
     var items = self.items.children('.ec-dot');
 
+    span = (self.width - (item_offset * 2)) / self.timespan;
+
     for (i = 0; i < items.length; i++) {
       var elem = $(items[i]);
       var item = elem.data('event');
       var m = item._starttime;
 
-      var x = Math.floor(item_offset + ((self.width - (item_offset*2)) / self.timespan) * (m - min_time_ms));
+      var x = Math.floor(item_offset + span * (m - min_time_ms));
       var xf = x % item_d;
       x = x - xf;
       var y = item_offset;
