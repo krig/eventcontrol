@@ -26,7 +26,7 @@
   var MAJSPANS = [4*365*24*3600*1000, 365*24*3600*1000, 120*24*3600*1000, 42*24*3600*1000, 28*24*3600*1000, 21*24*3600*1000, 14*24*3600*1000, 10*24*3600*1000];
   var MAJUNITS = [365*24*3600*1000, 120*24*3600*1000, 31*24*3600*1000, 21*24*3600*1000, 14*24*3600*1000, 7*24*3600*1000, 4*24*3600*1000, 2*24*3600*1000];
   var MINSPANS = [3*24*3600*1000, 2*24*3600*1000, 24*3600*1000, 12*3600*1000, 6*3600*1000, 3*3600*1000,  3600*1000, 45*60*1000, 30*60*1000, 20*60*1000, 10*60*1000, 5*60*1000, 3*60*1000, 60*1000, 45*1000, 20*1000, 12*1000, 0];
-  var MINUNITS = [  12*3600*1000,    6*3600*1000,  4*3600*1000,  3*3600*1000,   3600*1000,  30*60*1000, 15*60*1000,  5*60*1000,  4*60*1000,  3*60*1000,  2*60*1000,   60*1000,   30*1000, 15*1000, 10*1000,  5*1000,  2*1000, 1000,];
+  var MINUNITS = [  12*3600*1000,    6*3600*1000,  4*3600*1000,  3*3600*1000,   3600*1000,  30*60*1000, 15*60*1000,  5*60*1000,  4*60*1000,  3*60*1000,  2*60*1000,   60*1000,   30*1000, 15*1000, 10*1000,  5*1000,  2*1000, 1000];
 
   var EventControl = function(element, options) {
     this.settings = $.extend({
@@ -36,7 +36,7 @@
       data: [],
       hammertime: false,
       items_height: 101,
-      markers_height: 31,
+      markers_height: 31
     }, options);
 
     this.element = element;
@@ -73,10 +73,11 @@
     var element = this.element;
 
     function pan_with_delta(dragdelta, min_time, max_time) {
-      if (dragdelta > 0.9)
+      if (dragdelta > 0.9) {
         dragdelta = 0.9;
-      else if (dragdelta < -0.9)
+      } else if (dragdelta < -0.9) {
         dragdelta = -0.9;
+      }
       var time_offset = dragdelta * self.timespan;
       var new_min_time = moment(min_time + time_offset);
       var new_max_time = moment(max_time + time_offset);
@@ -229,13 +230,14 @@
 
     var new_min_time = this.min_time.clone();
     var new_max_time = this.max_time.clone();
+    var delta;
 
     if (dir < 0) {
-      var delta = this.timespan * 0.5;
+      delta = this.timespan * 0.5;
       new_min_time.subtract(delta * focus, 'ms');
       new_max_time.add(delta * (1.0 - focus), 'ms');
     } else {
-      var delta = this.timespan * 0.25;
+      delta = this.timespan * 0.25;
       new_min_time.add(delta * focus, 'ms');
       new_max_time.subtract(delta * (1.0 - focus), 'ms');
     }
@@ -345,13 +347,15 @@
     }
 
     var span = self.width / self.timespan;
+    var ts;
+    var xoffs;
 
-    if (min_unit != null) {
+    if (min_unit !== null) {
       minor = unit_in_timespan(min_unit, min_time_ms, self.timespan);
 
       for (i = 0; i < minor.length; i++) {
-        var ts = minor[i];
-        var xoffs = span * (ts - min_time_ms);
+        ts = minor[i];
+        xoffs = span * (ts - min_time_ms);
         addtick(xoffs, 1, self.items_h + 1 + self.markers_h);
         addlabel('ec-label', xoffs + 1, self.items_h + 1, moment(ts).format(minor_fmt));
       }
@@ -363,7 +367,7 @@
 
     lastlblend = -1;
     for (i = 0; i < major.length; i++) {
-      var ts = major[i];
+      ts = major[i];
       var l = span * (ts - min_time_ms);
       if (l < 2) {
         if (i + 1 < major.length) {
@@ -404,7 +408,7 @@
       x = x - xf;
       var y = item_offset;
       var pushed = false;
-      var xoffs = item_slot_x;
+      xoffs = item_slot_x;
       if ((x + xf - item_slot_x) <= item_w) {
         pushed = true;
         x = xoffs;
@@ -434,7 +438,8 @@
       var element = $(this);
       var self = element.data('eventcontrol');
       if (!self) {
-        element.data('eventcontrol', new EventControl(element, options));
+        self = new EventControl(element, options);
+        element.data('eventcontrol', self);
       } else if (options === undefined) {
         return self.save_state();
       } else if (options == 'zoom-in') {
@@ -444,6 +449,7 @@
       } else {
         self.load_state(options);
       }
+      return self;
     });
   };
 }(jQuery));
