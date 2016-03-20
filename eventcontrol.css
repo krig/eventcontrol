@@ -1,7 +1,7 @@
 .eventcontrol {
     /*background: #eee; */
     color: #444;
-    background: #e0e0e0;
+    background: #e3e3e3;
     border-radius: 3px;
     border: 1px solid #e0e0e0;
     overflow: hidden;
@@ -48,7 +48,7 @@
     font-size: 12px;
     text-align: left;
     white-space: nowrap;
-    color: #666;
+    color: #777;
 }
 
 .eventcontrol .ec-region-label {
@@ -58,7 +58,7 @@
     font-weight: bold;
     text-align: left;
     white-space: nowrap;
-    color: #aaa;
+    color: #999;
 }
 
 .eventcontrol .ec-draggable {
