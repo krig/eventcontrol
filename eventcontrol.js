@@ -282,40 +282,34 @@
     var maj_unit = 24*3600*1000;
     var min_unit = null;
 
-    if (self.timespan > 4*365*24*3600*1000) {
-      maj_unit = 365*24*3600*1000;
-      major_fmt = 'YYYY';
+
+    if (self.timespan >= 6*24*3600*1000) {
+      var majspans = [4*365*24*3600*1000, 365*24*3600*1000, 120*24*3600*1000, 42*24*3600*1000, 28*24*3600*1000, 21*24*3600*1000, 14*24*3600*1000, 10*24*3600*1000];
+      var majunits = [365*24*3600*1000, 120*24*3600*1000, 31*24*3600*1000, 21*24*3600*1000, 14*24*3600*1000, 7*24*3600*1000, 4*24*3600*1000, 2*24*3600*1000];
       min_unit = null;
-    } else if (self.timespan > 365*24*3600*1000) {
-      maj_unit = 120*24*3600*1000;
-      major_fmt = 'YYYY-MM';
-      min_unit = null;
-    } else if (self.timespan > 120*24*3600*1000) {
-      maj_unit = 31*24*3600*1000;
-      major_fmt = 'YYYY-MM';
-      min_unit = null;
-    } else if (self.timespan > 31*24*3600*1000) {
-      maj_unit = 31*24*3600*1000;
-      min_unit = null;
-    } else if (self.timespan > 24*24*3600*1000) {
-      maj_unit = 14*24*3600*1000;
-      min_unit = null;
-    } else if (self.timespan > 12*24*3600*1000) {
-      maj_unit = 7*24*3600*1000;
-      min_unit = null;
-    } else if (self.timespan >= 6*24*3600*1000) {
-      maj_unit = 24*3600*1000;
-      min_unit = null;
+      if (self.timespan > 4*365*24*3600*1000) {
+        major_fmt = 'YYYY';
+      } else if (self.timespan > 120*24*3600*1000) {
+        major_fmt = 'YYYY-MM';
+      }
+      for (i = 0; i < majspans.length; i++) {
+        if (self.timespan > majspans[i]) {
+          maj_unit = majunits[i];
+          break;
+        }
+      }
     } else {
       var spans = [3*24*3600*1000, 2*24*3600*1000, 24*3600*1000, 12*3600*1000, 6*3600*1000, 3*3600*1000,  3600*1000, 45*60*1000, 30*60*1000, 20*60*1000, 10*60*1000, 5*60*1000, 3*60*1000, 60*1000, 45*1000, 20*1000, 12*1000, 0];
       var units = [  12*3600*1000,    6*3600*1000,  4*3600*1000,  3*3600*1000,   3600*1000,  30*60*1000, 15*60*1000,  5*60*1000,  4*60*1000,  3*60*1000,  2*60*1000,   60*1000,   30*1000, 15*1000, 10*1000,  5*1000,  2*1000, 1000,];
 
-      var i;
       for (i = 0; i < spans.length; i++) {
         if (self.timespan > spans[i]) {
           min_unit = units[i];
           break;
         }
+      }
+      if (min_unit < 60*1000) {
+        minor_fmt = 'HH:mm:ss';
       }
     }
 
@@ -327,63 +321,54 @@
     var tick_idx = 0;
     var label_idx = 0;
 
-    if (min_unit != null) {
-      if (min_unit < 60*1000) {
-        minor_fmt = 'HH:mm:ss';
+    function addlabel(cls, l, t, lbl) {
+      if (l > lastlblend) {
+        if (label_idx < existing_labels.length) {
+          var label = $(existing_labels[label_idx]);
+          label.css('left', l).css('top', t).text(lbl).addClass(cls).removeClass((cls == 'ec-label') ? 'ec-region-label' : 'ec-label');
+          lastlblend = l + label.width();
+          label_idx += 1;
+        } else {
+          self.labels.append(['<div class="', cls, '" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
+          lastlblend = l + self.labels.children('.' + cls + ':last-child').width();
+        }
       }
+    }
 
+    function addtick(l, t, h) {
+      if (tick_idx < existing_ticks.length) {
+        var tick = $(existing_ticks[tick_idx]);
+        tick.css('left', l).css('top', t).css('height', h);
+        tick_idx += 1;
+      } else {
+        self.ticks.append(['<div class="ec-tick" style="left:', l, 'px;top:', t, 'px;height:', h, 'px;"></div>'].join(''));
+      }
+    }
+
+    var span = self.width / self.timespan;
+
+    if (min_unit != null) {
       minor = unit_in_timespan(min_unit, min_time_ms, self.timespan);
 
       for (i = 0; i < minor.length; i++) {
         var ts = minor[i];
-        var xoffs = (self.width / self.timespan) * (ts - min_time_ms);
-        if (tick_idx < existing_ticks.length) {
-          var tick = $(existing_ticks[tick_idx]);
-          tick.css('left', xoffs).css('top', 1).css('height', self.items_h + 1 + self.markers_h);
-          tick_idx += 1;
-        } else {
-          self.ticks.append(['<div class="ec-tick" style="left:', xoffs, 'px;top:', 1, 'px;height:', self.items_h + 1 + self.markers_h, 'px;"></div>'].join(''));
-        }
-
-        var l = (self.width / self.timespan) * (ts - min_time_ms);
-        var t = self.items_h + 1;
-        var lbl = moment(ts).format(minor_fmt);
-        if (l > lastlblend) {
-          if (label_idx < existing_labels.length) {
-            var label = $(existing_labels[label_idx]);
-            label.css('left', l).css('top', t).text(lbl).removeClass('ec-region-label').addClass('ec-label');
-            lastlblend = l + label.width();
-            label_idx += 1;
-          } else {
-            self.labels.append(['<div class="ec-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
-            lastlblend = l + self.labels.children('.ec-label:last-child').width();
-          }
-        }
+        var xoffs = span * (ts - min_time_ms);
+        addtick(xoffs, 1, self.items_h + 1 + self.markers_h);
+        addlabel('ec-label', xoffs + 1, self.items_h + 1, moment(ts).format(minor_fmt));
       }
     } else {
       for (i = 0; i < major.length; i++) {
-        var ts = major[i];
-        var xoffs = (self.width / self.timespan) * (ts - min_time_ms);
-
-        if (tick_idx < existing_ticks.length) {
-          var tick = $(existing_ticks[tick_idx]);
-          tick.css('left', xoffs).css('top', 1).css('height', self.items_h * 0.5);
-          tick_idx += 1;
-        } else {
-          self.ticks.append(['<div class="ec-tick" style="left:', xoffs, 'px;top:', 1, 'px;height:', self.items_h * 0.5, 'px;"></div>'].join(''));
-        }
+        addtick(span * (major[i] - min_time_ms), 1, self.items_h * 0.5);
       }
     }
 
     lastlblend = -1;
     for (i = 0; i < major.length; i++) {
       var ts = major[i];
-      var l = ((self.width - 4) / self.timespan) * (ts - min_time_ms) + 2;
-      var t = self.items_h + self.markers_h - 14;
-      var lbl = moment(ts).format(major_fmt);
-      if (l < 0) {
-        if (i < major.length-1) {
-          var next = ((self.width - 4) / self.timespan) * (major[i + 1] - min_time_ms) + 2;
+      var l = span * (ts - min_time_ms);
+      if (l < 2) {
+        if (i + 1 < major.length) {
+          var next = span * (major[i + 1] - min_time_ms);
           if (next > 60) {
             l = 2;
           }
@@ -391,18 +376,7 @@
           l = 2;
         }
       }
-
-      if (l > lastlblend) {
-        if (label_idx < existing_labels.length) {
-          var label = $(existing_labels[label_idx]);
-          label.css('left', l).css('top', t).text(lbl).addClass('ec-region-label').removeClass('ec-label');
-          lastlblend = l + label.width();
-          label_idx += 1;
-        } else {
-          self.labels.append(['<div class="ec-region-label" style="left:', l, 'px;top:', t, 'px;">', lbl, '</div>'].join(""));
-          lastlblend = l + self.labels.children('.ec-region-label:last-child').width();
-        }
-      }
+      addlabel('ec-region-label', l + 1, self.items_h + self.markers_h - 14, moment(ts).format(major_fmt));
     }
 
     for (i = tick_idx; i < existing_ticks.length; i++) {
@@ -417,49 +391,40 @@
     var item_slot_y = item_offset;
     var item_w = 8;
     var item_d = item_w + item_offset;
-
     var items = self.items.children('.ec-dot');
+
     for (i = 0; i < items.length; i++) {
       var elem = $(items[i]);
       var item = elem.data('event');
       var m = item._starttime;
 
-
       var x = Math.floor(item_offset + ((self.width - (item_offset*2)) / self.timespan) * (m - min_time_ms));
-
-      if (x < -item_w) {
-        elem.css('left', -200);
-      } else if (x > self.width + item_w) {
-        elem.css('left', self.width + 200);
-      } else {
-        var xf = x % item_d;
-        x = x - xf;
-        var y = item_offset;
-
-        var pushed = false;
-        var xoffs = item_slot_x;
-        if ((x + xf - item_slot_x) <= item_w) {
-          pushed = true;
+      var xf = x % item_d;
+      x = x - xf;
+      var y = item_offset;
+      var pushed = false;
+      var xoffs = item_slot_x;
+      if ((x + xf - item_slot_x) <= item_w) {
+        pushed = true;
+        x = xoffs;
+        y = item_slot_y + item_d;
+        if (y > self.items_h - item_offset) {
+          xoffs += item_d;
           x = xoffs;
-          y = item_slot_y + item_d;
-          if (y > self.items_h - item_offset) {
-            xoffs += item_d;
-            x = xoffs;
-            y = item_offset;
-          }
-        } else {
-          item_slot_y = item_offset;
+          y = item_offset;
         }
-
-        if (!pushed) {
-          x += xf;
-        }
-
-        item_slot_x = x;
-        item_slot_y = y;
-
-        elem.css('left', x).css('top', y);
+      } else {
+        item_slot_y = item_offset;
       }
+
+      if (!pushed) {
+        x += xf;
+      }
+
+      item_slot_x = x;
+      item_slot_y = y;
+
+      elem.css('left', x).css('top', y);
     }
   };
 
@@ -480,5 +445,4 @@
       }
     });
   };
-
 }(jQuery));
