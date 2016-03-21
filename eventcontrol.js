@@ -72,6 +72,11 @@
     var self = this;
     var element = this.element;
 
+    function stop_dragging() {
+      element.children('.ec-draggable').removeClass('ec-dragging');
+      self._dragging = null;
+    }
+
     function pan_with_delta(dragdelta, min_time, max_time) {
       if (dragdelta > 0.9) {
         dragdelta = 0.9;
@@ -140,11 +145,6 @@
         }
       });
 
-      function stop_dragging() {
-        element.children('.ec-draggable').removeClass('ec-dragging');
-        self._dragging = null;
-      }
-
       $('body').mouseup(function(e) {
         if (e.which == 1) {
           stop_dragging();
@@ -159,15 +159,15 @@
         if (e.which == 1 && self._dragging) {
           var deltapx = -(e.pageX - self._drag_x);
           var dragdelta = deltapx / self.width;
-          pan_with_delta(dragdelta, self._drag_min_time, self.drag_max_time);
+          pan_with_delta(dragdelta, self._drag_min_time, self._drag_max_time);
         }
       });
     }
 
     $(window).resize(function() {
       if (!self._dirty) {
-        self._dirty = true;
         if (self.min_time && self.max_time) {
+          self._dirty = true;
           window.setTimeout(function() {
             var mit = self.min_time.clone();
             var mat = self.max_time.clone();
