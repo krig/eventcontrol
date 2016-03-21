@@ -2,6 +2,10 @@
 
 jQuery timeline control with support for stacking events.
 
+## Releases
+
+* [Latest release][latest]
+
 ## Example
 
 See the included `index.html` and `demo.js`, or the [live demo][demo].
@@ -16,6 +20,7 @@ Optional dependency:
 
 * [hammer.js][hammer]
 
+[latest]: https://github.com/krig/eventcontrol/releases/latest
 [demo]: http://www.kri.gs/eventcontrol/ "kri.gs/eventcontrol"
 [moment]: http://momentjs.com/ "moment.js"
 [jquery]: https://jquery.org/ "jquery"
