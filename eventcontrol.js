@@ -34,9 +34,12 @@
       onclick: function(item, element, event) {},
       oncreate: function(item, element) {},
       data: [],
-      hammertime: true,
-      items_height: 101,
-      markers_height: 31
+      hammertime: false,
+      items_height: 113,
+      markers_height: 31,
+      item_width: 14,
+      item_offset: 2,
+      item_slot_x: -100,
     }, options);
 
     this.element = element;
@@ -44,6 +47,9 @@
 
     this.items_h = this.settings.items_height;
     this.markers_h = this.settings.markers_height;
+    this.item_width = this.settings.item_width;
+    this.item_offset = this.settings.item_offset;
+    this.item_slot_x = this.settings.item_slot_x;
     this._dragging = null;
     this._drag_x = 0;
 
@@ -389,10 +395,10 @@
       $(existing_labels[i]).remove();
     }
 
-    var item_offset = 2;
-    var item_slot_x = -100;
+    var item_offset = self.item_offset;
+    var item_slot_x = self.item_slot_x;
     var item_slot_y = item_offset;
-    var item_w = 8;
+    var item_w = self.item_width;
     var item_d = item_w + item_offset;
     var items = self.items.children('.ec-dot');
 
