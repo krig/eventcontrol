@@ -86,6 +86,8 @@
     this.labels = this.markers.children('.ec-labels');
     this.min_time = moment("2070-01-01");
     this.max_time = moment("1970-01-01");
+    this.pan_min = this.min_time.clone();
+    this.pan_max = this.max_time.clone();
     this.timespan = MAX_SPAN;
     this.max_timespan = MAX_SPAN;
     this.center_time = this.min_time.valueOf() + MAX_SPAN * 0.5;
@@ -111,6 +113,10 @@
       var time_offset = dragdelta * self.timespan;
       var new_min_time = moment(min_time + time_offset);
       var new_max_time = moment(max_time + time_offset);
+      // disallow pan if panning to where there are no data points
+      if (new_min_time > self.pan_max || new_max_time < self.pan_min) {
+        return;
+      }
       if (!new_min_time.isSame(self.min_time) || new_max_time.isSame(self.max_time)) {
         self.update_timespan(new_min_time, new_max_time);
       }
@@ -236,6 +242,9 @@
     self.min_time.subtract(5, 's');
     self.max_time.add(5, 's');
     self.center_time = self.min_time.valueOf() + (self.max_time.valueOf() - self.min_time.valueOf()) * 0.5;
+
+    self.pan_min = self.min_time.clone();
+    self.pan_max = self.max_time.clone();
 
     self.update_timespan(self.min_time.clone(), self.max_time.clone());
   };
