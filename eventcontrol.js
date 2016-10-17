@@ -3,6 +3,25 @@
 
 (function($) {
   function unit_in_timespan(h, min_time, timespan) {
+    var day = 24*3600*1000;
+    var year = 365*day;
+    if (h > day) {
+      if (timespan > year*4) {
+        var s = moment(min_time).startOf('year');
+        var e = min_time + timespan;
+        var r = [s];
+        var yy = s.year();
+        while (s < e) {
+          yy += 1;
+          s = moment(yy + "-01-01", 'YYYY-MM-DD');
+          r.push(s);
+        }
+        if (r.length > 20) {
+          r = r.slice(0, 20);
+        }
+        return r;
+      }
+    }
     var s = min_time - (min_time % h);
     var e = min_time + timespan;
     if (h > 15*60*1000) {
