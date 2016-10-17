@@ -114,7 +114,8 @@
       var new_min_time = moment(min_time + time_offset);
       var new_max_time = moment(max_time + time_offset);
       // disallow pan if panning to where there are no data points
-      if (new_min_time > self.pan_max || new_max_time < self.pan_min) {
+      if ((new_min_time > self.pan_max && new_min_time > min_time) ||
+          (new_max_time < self.pan_min && new_max_time < max_time)) {
         return;
       }
       if (!new_min_time.isSame(self.min_time) || new_max_time.isSame(self.max_time)) {
