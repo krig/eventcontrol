@@ -21,7 +21,7 @@ Optional dependency:
 * [hammer.js][hammer]
 
 [latest]: https://github.com/krig/eventcontrol/releases/latest
-[demo]: http://kri.gs/eventcontrol/ "kri.gs/eventcontrol"
+[demo]: http://krig.github.io/eventcontrol/ "kri.gs/eventcontrol"
 [moment]: http://momentjs.com/ "moment.js"
 [jquery]: https://jquery.org/ "jquery"
 [jquery-mousewheel]: https://github.com/jquery/jquery-mousewheel "jquery-mousewheel"
